@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome, FiFileText, FiAlertTriangle, FiCpu, FiBarChart2,
-  FiBell, FiLogOut, FiPlusCircle,
+  FiBell, FiLogOut, FiPlusCircle, FiBookOpen,
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -26,6 +26,7 @@ const Layout: React.FC = () => {
     { path: '/', icon: <FiHome />, label: 'Dashboard' },
     { path: '/claims', icon: <FiFileText />, label: 'Claims' },
     { path: '/claims/new', icon: <FiPlusCircle />, label: 'New Claim' },
+    { path: '/policy-documents', icon: <FiBookOpen />, label: 'Policy Documents' },
     { path: '/fraud-alerts', icon: <FiAlertTriangle />, label: 'Fraud Alerts' },
     { path: '/agents', icon: <FiCpu />, label: 'AI Agents' },
     { path: '/analytics', icon: <FiBarChart2 />, label: 'Analytics' },
