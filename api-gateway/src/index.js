@@ -61,6 +61,7 @@ app.get('/health', (req, res) => {
 app.use('/api', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
+  pathRewrite: { '^/api': '/api' },
   timeout: 120000,
   onError: (err, req, res) => {
     console.error(`[Proxy] Backend error: ${err.message}`);
