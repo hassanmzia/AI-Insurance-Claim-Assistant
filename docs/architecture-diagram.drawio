@@ -1,0 +1,372 @@
+<mxfile host="app.diagrams.net" modified="2026-02-03" agent="Claude" version="21.0.0">
+  <diagram id="arch-diagram" name="Technical Architecture">
+    <mxGraphModel dx="2200" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="AI Insurance Claim Assistant — Technical Architecture" style="text;html=1;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="800" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- CLIENT TIER -->
+        <!-- ================================================================ -->
+        <mxCell id="client-group" value="Client Tier" style="swimlane;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="380" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="Web Browser" style="shape=mxgraph.basic.rect;dx=10;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="client-group">
+          <mxGeometry x="20" y="45" width="340" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="react" value="React 18 + TypeScript&#xa;Single Page Application&#xa;Port 3062" style="rounded=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=0;fontSize=11;" vertex="1" parent="client-group">
+          <mxGeometry x="20" y="100" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="react-libs" value="React Router v6&#xa;Axios (JWT Interceptors)&#xa;Chart.js · React Hot Toast" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="client-group">
+          <mxGeometry x="200" y="100" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pages" value="Pages: Dashboard · Claims · NewClaim · ClaimDetail&#xa;FraudAlerts · Analytics · Agents · PolicyDocs&#xa;Profile · UserAdmin · Notifications · Register · Login" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=left;spacingLeft=8;" vertex="1" parent="client-group">
+          <mxGeometry x="20" y="175" width="340" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth-ctx" value="AuthContext&#xa;(JWT + RBAC)" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="client-group">
+          <mxGeometry x="20" y="240" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ws-client" value="WebSocket Client&#xa;(Real-time)" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="client-group">
+          <mxGeometry x="135" y="240" width="110" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="api-svc" value="API Service&#xa;(Axios)" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="client-group">
+          <mxGeometry x="260" y="240" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- API GATEWAY TIER -->
+        <!-- ================================================================ -->
+        <mxCell id="gw-group" value="API Gateway Tier" style="swimlane;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=14;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="460" y="90" width="320" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gateway" value="Express.js API Gateway&#xa;Port 4062" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;" vertex="1" parent="gw-group">
+          <mxGeometry x="20" y="45" width="280" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-rate" value="Rate Limiting&#xa;1000 req / 15 min" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="gw-group">
+          <mxGeometry x="20" y="100" width="130" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-cors" value="CORS · Helmet&#xa;Security Headers" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;" vertex="1" parent="gw-group">
+          <mxGeometry x="170" y="100" width="130" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-route1" value="/api/** → Backend :8062" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;fontStyle=0;" vertex="1" parent="gw-group">
+          <mxGeometry x="20" y="155" width="280" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-route2" value="/agents/** → Agent Service :9062" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="gw-group">
+          <mxGeometry x="20" y="190" width="280" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-route3" value="/mcp/** → MCP Server :5062" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="gw-group">
+          <mxGeometry x="20" y="225" width="280" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-ws" value="WebSocket Proxy → Backend /ws" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="gw-group">
+          <mxGeometry x="20" y="260" width="280" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Client → Gateway -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="api-svc" target="gateway" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1-label" value="HTTPS / WSS" style="edgeLabel;fontSize=10;fontColor=#333333;" vertex="1" connectable="0" parent="e1">
+          <mxGeometry x="-0.1" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- BACKEND TIER -->
+        <!-- ================================================================ -->
+        <mxCell id="be-group" value="Backend Tier (Django)" style="swimlane;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=14;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="410" width="740" height="340" as="geometry" />
+        </mxCell>
+
+        <mxCell id="django" value="Django 4 + DRF&#xa;Daphne ASGI Server&#xa;Port 8062" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;" vertex="1" parent="be-group">
+          <mxGeometry x="20" y="40" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="jwt" value="JWT Auth&#xa;(SimpleJWT)&#xa;Access: 60m&#xa;Refresh: 7d" style="rounded=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="220" y="40" width="100" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rbac" value="RBAC (6 Roles)&#xa;Admin · Manager&#xa;Adjuster · Reviewer&#xa;Agent · Customer" style="rounded=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="340" y="40" width="120" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="perms" value="10 Permission Classes&#xa;IsAdmin · IsManagement&#xa;CanProcessClaims&#xa;CanAssignClaims ..." style="rounded=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="480" y="40" width="130" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="channels" value="Django Channels&#xa;(WebSocket)" style="rounded=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="630" y="40" width="95" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- API Endpoints -->
+        <mxCell id="api-endpoints" value="REST API Endpoints" style="text;fontSize=12;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="be-group">
+          <mxGeometry x="20" y="105" width="160" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ep-auth" value="Auth &amp; Users&#xa;/token/ · /register/&#xa;/me/ · /profile/&#xa;/admin/users/" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=left;spacingLeft=6;" vertex="1" parent="be-group">
+          <mxGeometry x="20" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ep-claims" value="Claims CRUD&#xa;/claims/ (list/create)&#xa;/claims/{id}/process/&#xa;/claims/{id}/assign/&#xa;/claims/{id}/update_status/" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=left;spacingLeft=6;" vertex="1" parent="be-group">
+          <mxGeometry x="155" y="130" width="155" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ep-policy" value="Policies &amp; Docs&#xa;/policies/&#xa;/policy-documents/&#xa;/policy-documents/{id}/index/" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=left;spacingLeft=6;" vertex="1" parent="be-group">
+          <mxGeometry x="325" y="130" width="155" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ep-misc" value="Other&#xa;/fraud-alerts/ · /notifications/&#xa;/dashboard/ · /analytics/&#xa;/agent-tasks/ · /staff/" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=left;spacingLeft=6;" vertex="1" parent="be-group">
+          <mxGeometry x="495" y="130" width="155" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Models -->
+        <mxCell id="models-label" value="Data Models (PostgreSQL)" style="text;fontSize=12;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="be-group">
+          <mxGeometry x="20" y="200" width="200" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m1" value="UserProfile" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="20" y="225" width="90" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" value="InsurancePolicy" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="120" y="225" width="100" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" value="Claim" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;fontStyle=1;" vertex="1" parent="be-group">
+          <mxGeometry x="230" y="225" width="70" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" value="ClaimDocument" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="310" y="225" width="95" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m5" value="AuditLog" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="415" y="225" width="75" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m6" value="FraudAlert" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="500" y="225" width="75" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m7" value="AgentTask" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="585" y="225" width="75" height="28" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m8" value="PolicyDocument" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="20" y="260" width="100" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m9" value="ClaimNote" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="130" y="260" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m10" value="Notification" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="220" y="260" width="85" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m11" value="DashboardMetric" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="be-group">
+          <mxGeometry x="315" y="260" width="105" height="28" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ws-groups" value="WS Groups: claim_{id} · notifications_{user_id} · dashboard_updates" style="rounded=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontSize=9;" vertex="1" parent="be-group">
+          <mxGeometry x="20" y="300" width="400" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Gateway → Backend -->
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#82b366;" edge="1" source="gw-route1" target="django" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="380" />
+              <mxPoint x="130" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2-label" value="HTTP REST" style="edgeLabel;fontSize=10;fontColor=#333333;" vertex="1" connectable="0" parent="e2">
+          <mxGeometry x="-0.1" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- AI / AGENT TIER -->
+        <!-- ================================================================ -->
+        <mxCell id="ai-group" value="AI / Multi-Agent Tier (FastAPI)" style="swimlane;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=14;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="820" y="90" width="520" height="660" as="geometry" />
+        </mxCell>
+
+        <mxCell id="fastapi" value="FastAPI + Uvicorn&#xa;Main API: Port 9062 · MCP Server: Port 5062" style="rounded=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="40" width="480" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- A2A Protocol -->
+        <mxCell id="a2a-box" value="A2A Protocol (Agent-to-Agent)" style="swimlane;startSize=22;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;rounded=1;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="95" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="a2a-detail" value="AgentMessage routing&#xa;AgentRegistry discovery&#xa;POST /api/a2a/message&#xa;GET /api/agents" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=6;" vertex="1" parent="a2a-box">
+          <mxGeometry x="5" y="25" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- MCP Protocol -->
+        <mxCell id="mcp-box" value="MCP (Model Context Protocol)" style="swimlane;startSize=22;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;rounded=1;" vertex="1" parent="ai-group">
+          <mxGeometry x="270" y="95" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="mcp-detail" value="7 callable tools&#xa;POST /api/mcp/tools/call&#xa;GET /api/mcp/tools/list&#xa;For external LLM integration" style="text;fontSize=9;fillColor=none;strokeColor=none;align=left;spacingLeft=6;" vertex="1" parent="mcp-box">
+          <mxGeometry x="5" y="25" width="220" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Orchestrator -->
+        <mxCell id="orchestrator" value="Orchestrator Agent&#xa;Coordinates full pipeline&#xa;POST /api/process-claim" style="rounded=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" vertex="1" parent="ai-group">
+          <mxGeometry x="130" y="205" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Pipeline flow -->
+        <mxCell id="pipe-label" value="Multi-Agent Processing Pipeline" style="text;fontSize=11;fontStyle=5;fillColor=none;strokeColor=none;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="270" width="250" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent1" value="1. Claim Parser&#xa;Extract &amp; validate&#xa;claim data" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="300" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent2" value="2. Policy Retriever&#xa;RAG queries →&#xa;ChromaDB search" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="190" y="300" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent3" value="3. Recommendation&#xa;Coverage analysis&#xa;&amp; settlement calc" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="360" y="300" width="140" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent4" value="4. Fraud Detector&#xa;Pattern analysis&#xa;Score &amp; flags" style="rounded=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="370" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent5" value="5. Decision Maker&#xa;Final approve/deny&#xa;decision" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="190" y="370" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="agent6" value="6. Document Analyzer&#xa;Extract data from&#xa;uploaded files" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="360" y="370" width="140" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Pipeline arrows -->
+        <mxCell id="p1" style="strokeWidth=1.5;strokeColor=#b85450;" edge="1" source="orchestrator" target="agent1" parent="ai-group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" style="strokeWidth=1.5;strokeColor=#b85450;" edge="1" source="agent1" target="agent2" parent="ai-group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" style="strokeWidth=1.5;strokeColor=#b85450;" edge="1" source="agent2" target="agent3" parent="ai-group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" style="strokeWidth=1.5;strokeColor=#b85450;" edge="1" source="agent1" target="agent4" parent="ai-group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" style="strokeWidth=1.5;strokeColor=#b85450;" edge="1" source="agent4" target="agent5" parent="ai-group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p6" style="strokeWidth=1.5;strokeColor=#b85450;" edge="1" source="agent3" target="agent5" parent="ai-group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Embedding Model -->
+        <mxCell id="embed" value="SentenceTransformer&#xa;all-MiniLM-L6-v2&#xa;(Embedding Model)" style="rounded=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="445" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- OpenAI -->
+        <mxCell id="openai" value="OpenAI API&#xa;GPT-4o-mini&#xa;(LLM Reasoning)" style="rounded=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="ai-group">
+          <mxGeometry x="190" y="445" width="150" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Processing endpoints -->
+        <mxCell id="proc-endpoints" value="Key Endpoints&#xa;POST /api/process-claim — Full AI pipeline&#xa;POST /api/index-policy — Index PDF to ChromaDB&#xa;POST /api/a2a/message — Agent messaging&#xa;GET /api/mcp/tools/list — MCP tool discovery" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=left;spacingLeft=8;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="515" width="480" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- Claim statuses -->
+        <mxCell id="statuses" value="Claim Lifecycle: draft → submitted → under_review → ai_processing → approved/denied → settled → closed" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;" vertex="1" parent="ai-group">
+          <mxGeometry x="20" y="605" width="480" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Gateway → Agent Service -->
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#b85450;" edge="1" source="gw-route2" target="fastapi" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3-label" value="HTTP REST" style="edgeLabel;fontSize=10;fontColor=#333333;" vertex="1" connectable="0" parent="e3">
+          <mxGeometry x="-0.1" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- DATA TIER -->
+        <!-- ================================================================ -->
+        <mxCell id="data-group" value="Data Tier" style="swimlane;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=14;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="790" width="740" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="postgres" value="PostgreSQL 16&#xa;Port 5462&#xa;insurance_claims DB&#xa;12 tables · UUID PKs" style="shape=cylinder3;size=12;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;" vertex="1" parent="data-group">
+          <mxGeometry x="20" y="35" width="160" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="redis" value="Redis 7&#xa;Port 6382&#xa;Cache · Channels&#xa;Agent State" style="shape=cylinder3;size=12;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;" vertex="1" parent="data-group">
+          <mxGeometry x="220" y="35" width="160" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="chromadb" value="ChromaDB 0.5&#xa;Port 8562&#xa;Vector Store&#xa;Policy Embeddings" style="shape=cylinder3;size=12;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=11;" vertex="1" parent="data-group">
+          <mxGeometry x="420" y="35" width="160" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="files" value="File Storage&#xa;Policy PDFs&#xa;Claim Documents&#xa;(Django Media)" style="shape=cylinder3;size=12;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=11;" vertex="1" parent="data-group">
+          <mxGeometry x="620" y="35" width="100" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Backend → Data -->
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#6c8ebf;" edge="1" source="m3" target="postgres" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#82b366;" edge="1" source="ws-groups" target="redis" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Agent → ChromaDB -->
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#b85450;" edge="1" source="agent2" target="chromadb" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1085" y="790" />
+              <mxPoint x="540" y="790" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6-label" value="Vector Search" style="edgeLabel;fontSize=10;fontColor=#333333;" vertex="1" connectable="0" parent="e6">
+          <mxGeometry x="-0.1" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Backend → Agent (process claim) -->
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;strokeWidth=2;strokeColor=#d6b656;dashed=1;" edge="1" source="ep-claims" target="fastapi" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="570" />
+              <mxPoint x="800" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7-label" value="Process Claim&#xa;(HTTP callback)" style="edgeLabel;fontSize=10;fontColor=#333333;" vertex="1" connectable="0" parent="e7">
+          <mxGeometry x="-0.3" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- DOCKER LABEL -->
+        <!-- ================================================================ -->
+        <mxCell id="docker-label" value="Docker Compose · Bridge Network: insurance-network · 7 Containerized Services" style="rounded=1;whiteSpace=wrap;fillColor=#1a1a2e;strokeColor=#333;fontColor=#ffffff;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="970" width="1300" height="35" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
