@@ -676,10 +676,15 @@ class ClaimViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, CanProcessClaims])
     def update_status(self, request, pk=None):
-        """Update claim status with audit trail."""
+        """Update claim status with audit trail.
+
+        Admin and manager can set any valid status (override).
+        Adjusters can only perform standard workflow transitions.
+        """
         claim = self.get_object()
         new_status = request.data.get('status')
         notes = request.data.get('notes', '')
+        requester_role = _get_role(request.user)
 
         valid_statuses = [s[0] for s in Claim.STATUS_CHOICES]
         if new_status not in valid_statuses:
@@ -687,6 +692,24 @@ class ClaimViewSet(viewsets.ModelViewSet):
                 {'error': f'Invalid status. Must be one of: {valid_statuses}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # Adjusters can only do standard workflow transitions
+        if requester_role not in ('admin', 'manager'):
+            allowed_transitions = {
+                'submitted': ['under_review', 'ai_processing', 'pending_info'],
+                'under_review': ['approved', 'denied', 'pending_info'],
+                'ai_processing': ['under_review'],
+                'pending_info': ['submitted', 'under_review'],
+                'approved': ['settled'],
+                'appealed': ['under_review'],
+            }
+            allowed = allowed_transitions.get(claim.status, [])
+            if new_status not in allowed:
+                return Response(
+                    {'error': f'Cannot transition from {claim.status} to {new_status}. '
+                              f'Allowed: {allowed or "none"}. Contact admin/manager for override.'},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         old_status = claim.status
         claim.status = new_status
@@ -707,10 +730,20 @@ class ClaimViewSet(viewsets.ModelViewSet):
         elif new_status == 'settled':
             audit_action = 'settled'
 
+        # Mark management overrides in the audit trail
+        is_override = requester_role in ('admin', 'manager')
+        details = {
+            'notes': notes,
+            'approved_amount': float(claim.approved_amount or 0),
+        }
+        if is_override:
+            details['override'] = True
+            details['override_by_role'] = requester_role
+
         AuditLog.objects.create(
             claim=claim, user=request.user, action=audit_action,
             old_value={'status': old_status}, new_value={'status': new_status},
-            details={'notes': notes, 'approved_amount': float(claim.approved_amount or 0)}
+            details=details,
         )
 
         # Notify the claimant of status changes
