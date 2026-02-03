@@ -347,19 +347,19 @@ class ClaimViewSet(viewsets.ModelViewSet):
             'recommendation_summary': rec_summary,
             'deductible': deductible if covered else None,
             'settlement_amount': settlement if covered else None,
+            'ai_decision': 'approve' if covered else 'deny',
         }
         claim.fraud_score = fraud_score
         claim.fraud_flags = fraud_flags
         claim.ai_processing_log = processing_log
 
+        # AI sets recommended amounts but puts claim into under_review for human decision
         if covered:
-            claim.status = 'approved'
             claim.approved_amount = Decimal(str(round(cost * 0.85, 2)))
             claim.deductible_applied = claim.policy.deductible_amount
             claim.settlement_amount = max(Decimal('0'), claim.approved_amount - claim.deductible_applied)
-        else:
-            claim.status = 'denied'
 
+        claim.status = 'under_review'
         claim.save()
 
         # Create fraud alert if score is elevated
@@ -377,14 +377,20 @@ class ClaimViewSet(viewsets.ModelViewSet):
         Notification.objects.create(
             user=claim.claimant,
             notification_type='claim_update',
-            title=f'Claim {claim.claim_number} Processed',
-            message=f'Your claim has been {"approved" if covered else "denied"} after AI analysis.',
+            title=f'Claim {claim.claim_number} AI Review Complete',
+            message=f'Your claim has been analyzed by AI and is now pending human review. '
+                    f'AI recommendation: {"Approve" if covered else "Deny"}.',
             claim=claim,
         )
 
         AuditLog.objects.create(
             claim=claim, user=user, action='ai_processed',
-            details={'processor': 'built_in', 'decision': claim.status, 'fraud_score': fraud_score},
+            details={
+                'processor': 'built_in',
+                'ai_recommendation': 'approve' if covered else 'deny',
+                'fraud_score': fraud_score,
+                'recommended_settlement': float(settlement),
+            },
         )
 
         return Response({
@@ -444,11 +450,42 @@ class ClaimViewSet(viewsets.ModelViewSet):
             claim.settlement_amount = request.data['settlement_amount']
 
         claim.save()
+
+        # Determine the audit action based on the new status
+        audit_action = 'status_change'
+        if new_status == 'approved':
+            audit_action = 'approved'
+        elif new_status == 'denied':
+            audit_action = 'denied'
+        elif new_status == 'settled':
+            audit_action = 'settled'
+
         AuditLog.objects.create(
-            claim=claim, user=request.user, action='status_change',
+            claim=claim, user=request.user, action=audit_action,
             old_value={'status': old_status}, new_value={'status': new_status},
-            details={'notes': notes}
+            details={'notes': notes, 'approved_amount': float(claim.approved_amount or 0)}
         )
+
+        # Notify the claimant of status changes
+        status_messages = {
+            'approved': f'Your claim {claim.claim_number} has been approved.'
+                        f'{" Settlement: $" + str(claim.settlement_amount) if claim.settlement_amount else ""}',
+            'denied': f'Your claim {claim.claim_number} has been denied. '
+                      f'You may file an appeal if you believe this decision is incorrect.',
+            'settled': f'Your claim {claim.claim_number} has been settled. '
+                       f'Payment of ${claim.settlement_amount or 0} is being processed.',
+            'pending_info': f'Additional information is needed for claim {claim.claim_number}. '
+                           f'Please log in and provide the requested documents.',
+        }
+        if new_status in status_messages:
+            Notification.objects.create(
+                user=claim.claimant,
+                notification_type='claim_update',
+                title=f'Claim {claim.claim_number} - {dict(Claim.STATUS_CHOICES).get(new_status, new_status)}',
+                message=status_messages[new_status],
+                claim=claim,
+            )
+
         return Response({'status': new_status, 'claim_number': claim.claim_number})
 
     @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser])
