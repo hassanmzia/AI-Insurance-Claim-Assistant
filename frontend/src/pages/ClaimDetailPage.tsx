@@ -37,8 +37,12 @@ const ClaimDetailPage: React.FC = () => {
   const isStaff = ['admin', 'manager', 'adjuster', 'reviewer'].includes(role);
   const canProcess = ['admin', 'manager', 'adjuster'].includes(role);
   const canAssign = ['admin', 'manager'].includes(role);
+  const canOverrideStatus = ['admin', 'manager'].includes(role);
   const [staffList, setStaffList] = useState<{ id: number; full_name: string; role: string; role_display: string }[]>([]);
   const [assigneeId, setAssigneeId] = useState<string>('');
+  const [overrideStatus, setOverrideStatus] = useState<string>('');
+  const [overrideNotes, setOverrideNotes] = useState<string>('');
+  const [showOverride, setShowOverride] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -63,14 +67,17 @@ const ClaimDetailPage: React.FC = () => {
     }
   };
 
-  const handleStatusUpdate = async (status: string) => {
+  const handleStatusUpdate = async (newStatus: string, notes?: string) => {
     if (!id) return;
     try {
-      await api.updateClaimStatus(id, status);
-      toast.success(`Status updated to ${statusLabel(status)}`);
+      await api.updateClaimStatus(id, newStatus, notes ? { notes } : undefined);
+      toast.success(`Status updated to ${statusLabel(newStatus)}`);
       api.getClaim(id).then(setClaim);
+      setShowOverride(false);
+      setOverrideStatus('');
+      setOverrideNotes('');
     } catch (err: any) {
-      toast.error('Failed to update status');
+      toast.error(err.response?.data?.error || 'Failed to update status');
     }
   };
 
@@ -202,8 +209,98 @@ const ClaimDetailPage: React.FC = () => {
               <FiRotateCw /> Appeal
             </button>
           )}
+
+          {/* Admin/Manager: Status Override */}
+          {canOverrideStatus && (
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setShowOverride(!showOverride)}
+              style={{ marginLeft: '4px' }}
+            >
+              <FiRotateCw /> Change Status
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Status Override Panel (admin/manager) */}
+      {showOverride && canOverrideStatus && (
+        <div style={{
+          padding: '16px 20px', borderRadius: '8px', marginBottom: '16px',
+          background: '#fef9c3', border: '1px solid #facc15',
+          display: 'flex', flexDirection: 'column', gap: '10px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FiAlertTriangle style={{ color: '#b45309', fontSize: '16px' }} />
+            <strong style={{ color: '#92400e', fontSize: '14px' }}>
+              Manual Status Override
+            </strong>
+            <span style={{ color: '#a16207', fontSize: '12px' }}>
+              (Admin/Manager only &mdash; bypasses normal workflow)
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '4px', color: '#374151' }}>
+                New Status
+              </label>
+              <select
+                value={overrideStatus}
+                onChange={(e) => setOverrideStatus(e.target.value)}
+                style={{
+                  padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px',
+                  fontSize: '13px', minWidth: '200px',
+                }}
+              >
+                <option value="">Select status...</option>
+                {[
+                  { value: 'submitted', label: 'Submitted' },
+                  { value: 'under_review', label: 'Under Review' },
+                  { value: 'ai_processing', label: 'AI Processing' },
+                  { value: 'pending_info', label: 'Pending Information' },
+                  { value: 'approved', label: 'Approved' },
+                  { value: 'partially_approved', label: 'Partially Approved' },
+                  { value: 'denied', label: 'Denied' },
+                  { value: 'appealed', label: 'Appealed' },
+                  { value: 'settled', label: 'Settled' },
+                  { value: 'closed', label: 'Closed' },
+                ].filter((s) => s.value !== claim.status).map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '4px', color: '#374151' }}>
+                Reason / Notes
+              </label>
+              <input
+                type="text"
+                value={overrideNotes}
+                onChange={(e) => setOverrideNotes(e.target.value)}
+                placeholder="Reason for status change..."
+                style={{
+                  width: '100%', padding: '8px 12px', border: '1px solid #d1d5db',
+                  borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => handleStatusUpdate(overrideStatus, overrideNotes)}
+              disabled={!overrideStatus}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              Apply Override
+            </button>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => { setShowOverride(false); setOverrideStatus(''); setOverrideNotes(''); }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* AI Decision Banner */}
       {claim.status === 'under_review' && aiDecision && (
@@ -566,6 +663,14 @@ const ClaimDetailPage: React.FC = () => {
                           <span>
                             Status changed from <strong>{statusLabel(log.old_value.status)}</strong> to{' '}
                             <strong>{statusLabel(log.new_value.status)}</strong>
+                            {log.details?.override && (
+                              <span className="badge" style={{
+                                marginLeft: '8px', background: '#fef3c7', color: '#92400e',
+                                fontSize: '11px', padding: '2px 6px',
+                              }}>
+                                Override
+                              </span>
+                            )}
                           </span>
                         )}
                         {log.action === 'ai_processed' && log.details && (
