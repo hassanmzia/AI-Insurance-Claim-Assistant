@@ -34,11 +34,18 @@ const ClaimDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const role = user?.role || 'customer';
-  const isStaff = ['admin', 'adjuster', 'reviewer'].includes(role);
+  const isStaff = ['admin', 'manager', 'adjuster', 'reviewer'].includes(role);
+  const canProcess = ['admin', 'manager', 'adjuster'].includes(role);
+  const canAssign = ['admin', 'manager'].includes(role);
+  const [staffList, setStaffList] = useState<{ id: number; full_name: string; role: string; role_display: string }[]>([]);
+  const [assigneeId, setAssigneeId] = useState<string>('');
 
   useEffect(() => {
     if (id) {
       api.getClaim(id).then(setClaim).catch(console.error).finally(() => setLoading(false));
+    }
+    if (canAssign) {
+      api.getStaff().then((res: any) => setStaffList(res.results || [])).catch(() => {});
     }
   }, [id]);
 
@@ -79,6 +86,18 @@ const ClaimDetailPage: React.FC = () => {
     }
   };
 
+  const handleAssign = async () => {
+    if (!id || !assigneeId) return;
+    try {
+      const result = await api.assignClaim(id, parseInt(assigneeId));
+      toast.success(`Assigned to ${result.assignee || result.adjuster}`);
+      setAssigneeId('');
+      api.getClaim(id).then(setClaim);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to assign');
+    }
+  };
+
   const toggleStep = (index: number) => {
     setExpandedSteps((prev) => {
       const next = new Set(prev);
@@ -106,8 +125,32 @@ const ClaimDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="header-actions">
-          {/* Staff actions: AI Process, Approve, Deny, Settle, etc. */}
-          {isStaff && (
+          {/* Assign claim (admin/manager only) */}
+          {canAssign && !['settled', 'closed'].includes(claim.status) && (
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <select
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+                style={{
+                  padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: '6px',
+                  fontSize: '13px', minWidth: '180px',
+                }}
+              >
+                <option value="">Assign to...</option>
+                {staffList.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.full_name} ({s.role_display})
+                  </option>
+                ))}
+              </select>
+              <button className="btn btn-secondary btn-sm" onClick={handleAssign} disabled={!assigneeId}>
+                Assign
+              </button>
+            </div>
+          )}
+
+          {/* Processing actions (admin/manager/adjuster) */}
+          {canProcess && (
             <>
               {['submitted', 'under_review', 'pending_info'].includes(claim.status) && (
                 <button

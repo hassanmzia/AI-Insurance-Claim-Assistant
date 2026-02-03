@@ -12,8 +12,9 @@ class UserProfile(models.Model):
     """Extended user profile with role-based access."""
     ROLE_CHOICES = [
         ('admin', 'Administrator'),
+        ('manager', 'Claims Manager'),
         ('adjuster', 'Claims Adjuster'),
-        ('reviewer', 'Claims Reviewer'),
+        ('reviewer', 'QA / Compliance Reviewer'),
         ('agent', 'Insurance Agent'),
         ('customer', 'Customer'),
     ]

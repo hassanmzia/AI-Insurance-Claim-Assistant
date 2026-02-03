@@ -15,6 +15,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PolicyDocumentsPage from './pages/PolicyDocumentsPage';
 import ProfilePage from './pages/ProfilePage';
+import UserAdminPage from './pages/UserAdminPage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -66,23 +67,28 @@ const App: React.FC = () => {
             <Route path="claims/new" element={<NewClaimPage />} />
             <Route path="claims/:id" element={<ClaimDetailPage />} />
             <Route path="policy-documents" element={
-              <RoleRoute roles={['admin', 'adjuster', 'reviewer']}>
+              <RoleRoute roles={['admin', 'manager', 'adjuster', 'reviewer']}>
                 <PolicyDocumentsPage />
               </RoleRoute>
             } />
             <Route path="fraud-alerts" element={
-              <RoleRoute roles={['admin', 'adjuster', 'reviewer']}>
+              <RoleRoute roles={['admin', 'manager', 'adjuster', 'reviewer']}>
                 <FraudAlertsPage />
               </RoleRoute>
             } />
             <Route path="agents" element={
-              <RoleRoute roles={['admin']}>
+              <RoleRoute roles={['admin', 'manager']}>
                 <AgentsPage />
               </RoleRoute>
             } />
             <Route path="analytics" element={
-              <RoleRoute roles={['admin', 'reviewer']}>
+              <RoleRoute roles={['admin', 'manager', 'reviewer']}>
                 <AnalyticsPage />
+              </RoleRoute>
+            } />
+            <Route path="user-admin" element={
+              <RoleRoute roles={['admin', 'manager']}>
+                <UserAdminPage />
               </RoleRoute>
             } />
             <Route path="notifications" element={<NotificationsPage />} />

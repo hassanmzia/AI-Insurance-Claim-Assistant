@@ -55,6 +55,19 @@ class Command(BaseCommand):
             admin.save()
         UserProfile.objects.get_or_create(user=admin, defaults={'role': 'admin', 'department': 'IT'})
 
+        # Create claims manager
+        mgr, created = User.objects.get_or_create(
+            username='david.thompson',
+            defaults={
+                'email': 'david.thompson@insurance.com',
+                'first_name': 'David', 'last_name': 'Thompson',
+            }
+        )
+        if created:
+            mgr.set_password('password123')
+            mgr.save()
+        UserProfile.objects.get_or_create(user=mgr, defaults={'role': 'manager', 'department': 'Claims'})
+
         # Create adjusters
         adjusters = []
         adjuster_names = [
@@ -73,6 +86,32 @@ class Command(BaseCommand):
                 u.save()
             UserProfile.objects.get_or_create(user=u, defaults={'role': 'adjuster', 'department': 'Claims'})
             adjusters.append(u)
+
+        # Create QA reviewer
+        reviewer, created = User.objects.get_or_create(
+            username='lisa.wang',
+            defaults={
+                'email': 'lisa.wang@insurance.com',
+                'first_name': 'Lisa', 'last_name': 'Wang',
+            }
+        )
+        if created:
+            reviewer.set_password('password123')
+            reviewer.save()
+        UserProfile.objects.get_or_create(user=reviewer, defaults={'role': 'reviewer', 'department': 'Compliance'})
+
+        # Create insurance agent
+        ins_agent, created = User.objects.get_or_create(
+            username='michael.brown',
+            defaults={
+                'email': 'michael.brown@insurance.com',
+                'first_name': 'Michael', 'last_name': 'Brown',
+            }
+        )
+        if created:
+            ins_agent.set_password('password123')
+            ins_agent.save()
+        UserProfile.objects.get_or_create(user=ins_agent, defaults={'role': 'agent', 'department': 'Sales'})
 
         # Create customers with policies and claims
         customers_data = [

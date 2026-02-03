@@ -32,14 +32,23 @@ const Layout: React.FC = () => {
 
   const role = user?.role || 'customer';
 
+  const claimsLabel = ['admin', 'manager'].includes(role)
+    ? 'All Claims'
+    : role === 'adjuster'
+      ? 'Claims Queue'
+      : role === 'reviewer'
+        ? 'Review Queue'
+        : 'My Claims';
+
   const navItems: NavItem[] = [
     { path: '/', icon: <FiHome />, label: 'Dashboard' },
-    { path: '/claims', icon: <FiFileText />, label: role === 'admin' ? 'All Claims' : role === 'adjuster' ? 'Claims Queue' : 'My Claims' },
-    { path: '/claims/new', icon: <FiPlusCircle />, label: 'New Claim' },
-    { path: '/policy-documents', icon: <FiBookOpen />, label: 'Policy Documents', roles: ['admin', 'adjuster', 'reviewer'] },
-    { path: '/fraud-alerts', icon: <FiAlertTriangle />, label: 'Fraud Alerts', roles: ['admin', 'adjuster', 'reviewer'] },
-    { path: '/agents', icon: <FiCpu />, label: 'AI Agents', roles: ['admin'] },
-    { path: '/analytics', icon: <FiBarChart2 />, label: 'Analytics', roles: ['admin', 'reviewer'] },
+    { path: '/claims', icon: <FiFileText />, label: claimsLabel },
+    { path: '/claims/new', icon: <FiPlusCircle />, label: 'New Claim', roles: ['admin', 'manager', 'agent', 'customer'] },
+    { path: '/policy-documents', icon: <FiBookOpen />, label: 'Policy Documents', roles: ['admin', 'manager', 'adjuster', 'reviewer'] },
+    { path: '/fraud-alerts', icon: <FiAlertTriangle />, label: 'Fraud Alerts', roles: ['admin', 'manager', 'adjuster', 'reviewer'] },
+    { path: '/user-admin', icon: <FiUsers />, label: 'User Admin', roles: ['admin', 'manager'] },
+    { path: '/agents', icon: <FiCpu />, label: 'AI Agents', roles: ['admin', 'manager'] },
+    { path: '/analytics', icon: <FiBarChart2 />, label: 'Analytics', roles: ['admin', 'manager', 'reviewer'] },
     { path: '/notifications', icon: <FiBell />, label: 'Notifications', badge: unreadCount },
   ];
 
@@ -58,8 +67,9 @@ const Layout: React.FC = () => {
 
   const roleLabels: Record<string, string> = {
     admin: 'Administrator',
+    manager: 'Claims Manager',
     adjuster: 'Claims Adjuster',
-    reviewer: 'Claims Reviewer',
+    reviewer: 'QA Reviewer',
     agent: 'Insurance Agent',
     customer: 'Customer',
   };
@@ -91,7 +101,7 @@ const Layout: React.FC = () => {
             <div
               className="user-avatar"
               style={{
-                background: role === 'admin' ? '#7c3aed' : role === 'adjuster' ? '#1a56db' : '#10b981',
+                background: role === 'admin' ? '#7c3aed' : role === 'manager' ? '#0891b2' : role === 'adjuster' ? '#1a56db' : role === 'reviewer' ? '#d97706' : '#10b981',
                 cursor: 'pointer',
               }}
               onClick={() => navigate('/profile')}
