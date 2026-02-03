@@ -29,8 +29,10 @@ from .serializers import (
     DashboardMetricSerializer, ClaimProcessRequestSerializer,
 )
 from .permissions import (
-    IsAdmin, IsAdminOrAdjuster, IsStaff, IsStaffOrReadOnly,
-    IsOwnerOrStaff, CanProcessClaims, CanManageFraudAlerts,
+    IsAdmin, IsManagement, IsStaff, IsStaffOrReadOnly,
+    IsOwnerOrStaff, CanProcessClaims, CanAssignClaims,
+    CanManageFraudAlerts, CanViewAnalytics, CanManageUsers,
+    STAFF_ROLES, MANAGEMENT_ROLES, PROCESSING_ROLES,
 )
 
 logger = logging.getLogger(__name__)
@@ -133,6 +135,172 @@ def delete_account(request):
 
 
 # ==========================================================================
+# User Administration (admin / manager only)
+# ==========================================================================
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated, CanManageUsers])
+def list_users(request):
+    """List all users with their profiles. Managers cannot see admin accounts."""
+    role_filter = request.query_params.get('role', '')
+    search = request.query_params.get('search', '')
+    requester_role = _get_role(request.user)
+
+    profiles = UserProfile.objects.select_related('user').all()
+
+    # Managers cannot see/manage admin users
+    if requester_role == 'manager':
+        profiles = profiles.exclude(role='admin')
+
+    if role_filter:
+        profiles = profiles.filter(role=role_filter)
+    if search:
+        profiles = profiles.filter(
+            Q(user__username__icontains=search) |
+            Q(user__email__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search)
+        )
+
+    users_data = []
+    for p in profiles.order_by('-created_at'):
+        users_data.append({
+            'id': p.user.id,
+            'username': p.user.username,
+            'email': p.user.email,
+            'first_name': p.user.first_name,
+            'last_name': p.user.last_name,
+            'role': p.role,
+            'role_display': p.get_role_display(),
+            'department': p.department,
+            'phone': p.phone,
+            'is_active': p.user.is_active,
+            'date_joined': p.user.date_joined.isoformat(),
+            'last_login': p.user.last_login.isoformat() if p.user.last_login else None,
+        })
+
+    return Response({'count': len(users_data), 'results': users_data})
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated, CanManageUsers])
+def create_user(request):
+    """Create a new user with a specific role (admin/manager only)."""
+    requester_role = _get_role(request.user)
+    target_role = request.data.get('role', 'customer')
+
+    # Managers cannot create admin users
+    if requester_role == 'manager' and target_role == 'admin':
+        return Response(
+            {'error': 'Managers cannot create administrator accounts.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    serializer = UserRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        profile = user.profile
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'role': profile.role,
+            'message': 'User created successfully',
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PATCH'])
+@permission_classes([permissions.IsAuthenticated, CanManageUsers])
+def update_user(request, user_id):
+    """Update a user's role, status, or profile fields."""
+    requester_role = _get_role(request.user)
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    target_profile, _ = UserProfile.objects.get_or_create(user=target_user)
+
+    # Managers cannot modify admin users
+    if requester_role == 'manager' and target_profile.role == 'admin':
+        return Response(
+            {'error': 'Managers cannot modify administrator accounts.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    # Managers cannot promote to admin
+    if requester_role == 'manager' and request.data.get('role') == 'admin':
+        return Response(
+            {'error': 'Managers cannot assign the administrator role.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    # Cannot modify own role
+    if target_user == request.user and 'role' in request.data:
+        return Response(
+            {'error': 'You cannot change your own role.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Update User model fields
+    for field in ('first_name', 'last_name', 'email'):
+        if field in request.data:
+            setattr(target_user, field, request.data[field])
+    if 'is_active' in request.data:
+        target_user.is_active = request.data['is_active']
+    target_user.save()
+
+    # Update profile fields
+    if 'role' in request.data:
+        valid_roles = [r[0] for r in UserProfile.ROLE_CHOICES]
+        if request.data['role'] in valid_roles:
+            target_profile.role = request.data['role']
+    if 'department' in request.data:
+        target_profile.department = request.data['department']
+    if 'phone' in request.data:
+        target_profile.phone = request.data['phone']
+    target_profile.save()
+
+    return Response({
+        'id': target_user.id,
+        'username': target_user.username,
+        'email': target_user.email,
+        'role': target_profile.role,
+        'role_display': target_profile.get_role_display(),
+        'is_active': target_user.is_active,
+        'message': 'User updated successfully',
+    })
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated, IsStaff])
+def list_staff(request):
+    """List staff members available for claim assignment."""
+    role_filter = request.query_params.get('role', '')
+    profiles = UserProfile.objects.select_related('user').filter(
+        role__in=('manager', 'adjuster', 'reviewer'),
+        user__is_active=True,
+    )
+    if role_filter:
+        profiles = profiles.filter(role=role_filter)
+
+    staff_data = []
+    for p in profiles.order_by('role', 'user__first_name'):
+        staff_data.append({
+            'id': p.user.id,
+            'username': p.user.username,
+            'full_name': p.user.get_full_name() or p.user.username,
+            'role': p.role,
+            'role_display': p.get_role_display(),
+        })
+    return Response({'results': staff_data})
+
+
+def _get_role(user):
+    """Get role from user profile."""
+    profile = getattr(user, 'profile', None)
+    return profile.role if profile else 'customer'
+
+
+# ==========================================================================
 # Policy Documents
 # ==========================================================================
 class PolicyDocumentViewSet(viewsets.ModelViewSet):
@@ -189,7 +357,7 @@ class InsurancePolicyViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         profile = getattr(user, 'profile', None)
-        if profile and profile.role in ('admin', 'adjuster', 'reviewer'):
+        if profile and profile.role in STAFF_ROLES:
             return InsurancePolicy.objects.all()
         return InsurancePolicy.objects.filter(holder=user)
 
@@ -214,15 +382,18 @@ class ClaimViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         profile = getattr(user, 'profile', None)
+        role = profile.role if profile else 'customer'
         qs = Claim.objects.all()
 
-        if profile and profile.role == 'admin':
+        if role in ('admin', 'manager'):
             return qs
-        elif profile and profile.role in ('adjuster', 'reviewer'):
-            # Adjusters see claims assigned to them + unassigned
+        elif role in ('adjuster', 'reviewer'):
             view_mode = self.request.query_params.get('view', 'all')
             if view_mode == 'mine':
                 return qs.filter(assigned_adjuster=user)
+            return qs
+        elif role == 'agent':
+            # Agents can see all claims but cannot approve/deny (enforced by permissions)
             return qs
         else:
             # Customers see only their own claims
@@ -467,32 +638,40 @@ class ClaimViewSet(viewsets.ModelViewSet):
             'fraud_score': claim.fraud_score,
         })
 
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsAdmin])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, CanAssignClaims])
     def assign(self, request, pk=None):
-        """Assign an adjuster to a claim."""
+        """Assign a staff member to a claim (admin and manager only)."""
         claim = self.get_object()
-        adjuster_id = request.data.get('adjuster_id')
+        assignee_id = request.data.get('adjuster_id') or request.data.get('assignee_id')
         try:
-            adjuster = User.objects.get(id=adjuster_id, profile__role='adjuster')
-            old_adjuster = claim.assigned_adjuster
-            claim.assigned_adjuster = adjuster
-            claim.status = 'under_review'
+            assignee = User.objects.get(
+                id=assignee_id,
+                profile__role__in=('manager', 'adjuster', 'reviewer'),
+            )
+            old_assignee = claim.assigned_adjuster
+            claim.assigned_adjuster = assignee
+            if claim.status in ('submitted', 'ai_processing'):
+                claim.status = 'under_review'
             claim.save()
             AuditLog.objects.create(
                 claim=claim, user=request.user, action='assigned',
-                old_value={'adjuster': str(old_adjuster) if old_adjuster else None},
-                new_value={'adjuster': str(adjuster)},
+                old_value={'assignee': str(old_assignee) if old_assignee else None},
+                new_value={'assignee': str(assignee), 'role': assignee.profile.get_role_display()},
             )
             Notification.objects.create(
-                user=adjuster, notification_type='assignment',
+                user=assignee, notification_type='assignment',
                 title='New Claim Assignment',
                 message=f'You have been assigned claim {claim.claim_number}.',
                 claim=claim,
             )
-            return Response({'status': 'assigned', 'adjuster': adjuster.get_full_name()})
+            return Response({
+                'status': 'assigned',
+                'assignee': assignee.get_full_name(),
+                'role': assignee.profile.get_role_display(),
+            })
         except User.DoesNotExist:
             return Response(
-                {'error': 'Adjuster not found'}, status=status.HTTP_404_NOT_FOUND
+                {'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND
             )
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, CanProcessClaims])
@@ -655,10 +834,10 @@ def dashboard_summary(request):
     role = profile.role if profile else 'customer'
 
     # Scope claims by role
-    if role == 'admin':
+    if role in ('admin', 'manager'):
         claims = Claim.objects.all()
-    elif role in ('adjuster', 'reviewer'):
-        claims = Claim.objects.all()  # adjusters see all, but we add their stats
+    elif role in ('adjuster', 'reviewer', 'agent'):
+        claims = Claim.objects.all()
     else:
         claims = Claim.objects.filter(claimant=user)
 
@@ -717,8 +896,9 @@ def dashboard_summary(request):
         data['my_recent_claims'] = ClaimListSerializer(
             my_claims.order_by('-updated_at')[:5], many=True
         ).data
-    elif role == 'admin':
+    elif role in ('admin', 'manager'):
         data['total_users'] = User.objects.count()
+        data['total_staff'] = UserProfile.objects.filter(role__in=STAFF_ROLES).count()
         data['total_adjusters'] = UserProfile.objects.filter(role='adjuster').count()
         data['unassigned_claims'] = claims.filter(assigned_adjuster__isnull=True).exclude(
             status__in=['draft', 'closed', 'settled']
@@ -728,7 +908,7 @@ def dashboard_summary(request):
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated, IsStaff])
+@permission_classes([permissions.IsAuthenticated, CanViewAnalytics])
 def analytics_report(request):
     """Detailed analytics report."""
     period = request.query_params.get('period', '30')

@@ -100,6 +100,27 @@ class ApiService {
     return resp;
   }
 
+  // User Administration
+  async getUsers(params?: Record<string, string>): Promise<any> {
+    const { data } = await this.client.get('/admin/users/', { params });
+    return data;
+  }
+
+  async createUser(userData: Record<string, any>): Promise<any> {
+    const { data } = await this.client.post('/admin/users/create/', userData);
+    return data;
+  }
+
+  async updateUser(userId: number, userData: Record<string, any>): Promise<any> {
+    const { data } = await this.client.patch(`/admin/users/${userId}/`, userData);
+    return data;
+  }
+
+  async getStaff(params?: Record<string, string>): Promise<any> {
+    const { data } = await this.client.get('/staff/', { params });
+    return data;
+  }
+
   // Dashboard
   async getDashboard(): Promise<DashboardSummary> {
     const { data } = await this.client.get('/dashboard/');

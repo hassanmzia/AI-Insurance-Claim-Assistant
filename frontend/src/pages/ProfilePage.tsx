@@ -189,8 +189,9 @@ const ProfilePage: React.FC = () => {
 
   const roleLabels: Record<string, string> = {
     admin: 'Administrator',
+    manager: 'Claims Manager',
     adjuster: 'Claims Adjuster',
-    reviewer: 'Claims Reviewer',
+    reviewer: 'QA Reviewer',
     agent: 'Insurance Agent',
     customer: 'Customer',
   };
