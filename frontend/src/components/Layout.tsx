@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome, FiFileText, FiAlertTriangle, FiCpu, FiBarChart2,
-  FiBell, FiLogOut, FiPlusCircle, FiBookOpen, FiUsers,
+  FiBell, FiLogOut, FiPlusCircle, FiBookOpen, FiUsers, FiUser,
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -88,13 +88,22 @@ const Layout: React.FC = () => {
 
         <div className="sidebar-footer">
           <div className="user-info">
-            <div className="user-avatar" style={{
-              background: role === 'admin' ? '#7c3aed' : role === 'adjuster' ? '#1a56db' : '#10b981'
-            }}>{initials}</div>
-            <div className="user-details">
+            <div
+              className="user-avatar"
+              style={{
+                background: role === 'admin' ? '#7c3aed' : role === 'adjuster' ? '#1a56db' : '#10b981',
+                cursor: 'pointer',
+              }}
+              onClick={() => navigate('/profile')}
+              title="View Profile"
+            >{initials}</div>
+            <div className="user-details" style={{ cursor: 'pointer' }} onClick={() => navigate('/profile')}>
               <div className="name">{user?.first_name} {user?.last_name}</div>
               <div className="role">{roleLabels[role] || role}</div>
             </div>
+            <button className="logout-btn" onClick={() => navigate('/profile')} title="Profile" style={{ marginRight: '4px' }}>
+              <FiUser />
+            </button>
             <button className="logout-btn" onClick={handleLogout} title="Logout">
               <FiLogOut />
             </button>

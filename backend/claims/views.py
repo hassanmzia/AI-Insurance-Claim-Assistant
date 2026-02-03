@@ -70,6 +70,68 @@ def current_user(request):
     return Response(serializer.data)
 
 
+@api_view(['PATCH'])
+def update_profile(request):
+    """Update current user's profile info (name, email, phone)."""
+    user = request.user
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    # Update User model fields
+    for field in ('first_name', 'last_name', 'email'):
+        if field in request.data:
+            setattr(user, field, request.data[field])
+    user.save()
+
+    # Update UserProfile fields
+    if 'phone' in request.data:
+        profile.phone = request.data['phone']
+        profile.save()
+
+    serializer = UserProfileSerializer(profile)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+def change_password(request):
+    """Change current user's password."""
+    user = request.user
+    current_password = request.data.get('current_password', '')
+    new_password = request.data.get('new_password', '')
+
+    if not current_password or not new_password:
+        return Response(
+            {'error': 'Both current_password and new_password are required.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    if not user.check_password(current_password):
+        return Response(
+            {'error': 'Current password is incorrect.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    if len(new_password) < 8:
+        return Response(
+            {'error': 'New password must be at least 8 characters.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    user.set_password(new_password)
+    user.save()
+    return Response({'message': 'Password changed successfully.'})
+
+
+@api_view(['DELETE'])
+def delete_account(request):
+    """Delete current user's account and all associated data."""
+    user = request.user
+    password = request.data.get('password', '')
+    if not user.check_password(password):
+        return Response(
+            {'error': 'Password is incorrect. Account not deleted.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    user.delete()
+    return Response({'message': 'Account deleted successfully.'}, status=status.HTTP_200_OK)
+
+
 # ==========================================================================
 # Policy Documents
 # ==========================================================================

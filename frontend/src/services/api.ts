@@ -75,6 +75,31 @@ class ApiService {
     localStorage.removeItem('refresh_token');
   }
 
+  async updateProfile(data: Record<string, string>): Promise<User> {
+    const { data: resp } = await this.client.patch('/auth/profile/', data);
+    return resp;
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<any> {
+    const { data } = await this.client.post('/auth/change-password/', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
+    return data;
+  }
+
+  async deleteAccount(password: string): Promise<any> {
+    const { data } = await this.client.delete('/auth/delete-account/', {
+      data: { password },
+    });
+    return data;
+  }
+
+  async updatePolicy(id: string, data: Record<string, any>): Promise<InsurancePolicy> {
+    const { data: resp } = await this.client.patch(`/policies/${id}/`, data);
+    return resp;
+  }
+
   // Dashboard
   async getDashboard(): Promise<DashboardSummary> {
     const { data } = await this.client.get('/dashboard/');
