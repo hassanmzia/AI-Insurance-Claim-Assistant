@@ -359,9 +359,6 @@ class InsurancePolicyViewSet(viewsets.ModelViewSet):
         profile = getattr(user, 'profile', None)
         if profile and profile.role in STAFF_ROLES:
             return InsurancePolicy.objects.all()
-        # Auto-create any missing policy types for this customer
-        from .serializers import UserRegistrationSerializer
-        UserRegistrationSerializer.ensure_customer_policies(user)
         return InsurancePolicy.objects.filter(holder=user)
 
 
