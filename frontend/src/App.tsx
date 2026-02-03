@@ -14,6 +14,7 @@ import AgentsPage from './pages/AgentsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PolicyDocumentsPage from './pages/PolicyDocumentsPage';
+import ProfilePage from './pages/ProfilePage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -85,6 +86,7 @@ const App: React.FC = () => {
               </RoleRoute>
             } />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </Router>
