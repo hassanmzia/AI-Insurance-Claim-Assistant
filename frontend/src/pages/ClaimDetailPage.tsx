@@ -122,7 +122,7 @@ const ClaimDetailPage: React.FC = () => {
   return (
     <div>
       <div className="page-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <button className="btn btn-secondary btn-sm" onClick={() => navigate('/claims')}>
             <FiArrowLeft /> Back
           </button>
@@ -323,7 +323,7 @@ const ClaimDetailPage: React.FC = () => {
       )}
 
       {/* Status bar */}
-      <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+      <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon" style={{ background: statusColor(claim.status) + '20', color: statusColor(claim.status) }}><FiFileText /></div>
           <div className="stat-content">

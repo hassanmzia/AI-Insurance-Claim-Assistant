@@ -67,7 +67,7 @@ const RegisterPage: React.FC = () => {
         {error && <div className="error-msg">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-row" style={{ gap: '12px' }}>
             <div className="form-group">
               <label>First Name</label>
               <input

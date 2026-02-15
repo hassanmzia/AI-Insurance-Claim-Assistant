@@ -229,7 +229,7 @@ const ProfilePage: React.FC = () => {
         {profileErr && <div style={msgError}>{profileErr}</div>}
 
         <form onSubmit={handleProfileSave}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-row" style={{ gap: '12px' }}>
             <div>
               <label style={{ fontSize: '13px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '4px' }}>
                 First Name
@@ -347,7 +347,7 @@ const ProfilePage: React.FC = () => {
                   {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '8px', fontSize: '13px' }}>
+              <div className="form-row" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginTop: '8px', fontSize: '13px' }}>
                 <div>
                   <div style={{ color: '#9ca3af' }}>Premium</div>
                   <div style={{ fontWeight: 600 }}>${Number(p.premium_amount).toLocaleString()}/yr</div>
@@ -361,7 +361,7 @@ const ProfilePage: React.FC = () => {
                   <div style={{ fontWeight: 600 }}>${Number(p.coverage_limit).toLocaleString()}</div>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '8px', fontSize: '13px' }}>
+              <div className="form-row" style={{ gap: '12px', marginTop: '8px', fontSize: '13px' }}>
                 <div>
                   <div style={{ color: '#9ca3af' }}>Effective</div>
                   <div>{p.effective_date}</div>
