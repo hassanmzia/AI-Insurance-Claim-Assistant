@@ -157,7 +157,7 @@ const UserAdminPage: React.FC = () => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1100px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '4px' }}>User Administration</h1>
           <p style={{ color: '#6b7280', fontSize: '14px' }}>
@@ -177,7 +177,7 @@ const UserAdminPage: React.FC = () => {
         <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '10px', color: '#0369a1' }}>
           Role Permissions Reference
         </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', fontSize: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px', fontSize: '12px' }}>
           <div><span style={roleBadge('admin')}>Admin</span> Full access, user management</div>
           <div><span style={roleBadge('manager')}>Manager</span> Assign claims, approve, analytics</div>
           <div><span style={roleBadge('adjuster')}>Adjuster</span> Process, approve/deny claims</div>
@@ -197,7 +197,7 @@ const UserAdminPage: React.FC = () => {
           {createMsg && <div style={{ padding: '10px', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', marginBottom: '12px', fontSize: '14px' }}>{createMsg}</div>}
           {createErr && <div style={{ padding: '10px', background: '#fef2f2', color: '#991b1b', borderRadius: '8px', marginBottom: '12px', fontSize: '14px' }}>{createErr}</div>}
           <form onSubmit={handleCreate}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '4px' }}>Username *</label>
                 <input style={inputStyle} value={createForm.username} onChange={(e) => setCreateForm((f) => ({ ...f, username: e.target.value }))} required />
@@ -211,7 +211,7 @@ const UserAdminPage: React.FC = () => {
                 <input type="password" style={inputStyle} value={createForm.password} onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))} required minLength={8} />
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '4px' }}>First Name</label>
                 <input style={inputStyle} value={createForm.first_name} onChange={(e) => setCreateForm((f) => ({ ...f, first_name: e.target.value }))} />
@@ -238,9 +238,10 @@ const UserAdminPage: React.FC = () => {
       <div style={{
         display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center',
         background: '#fff', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e5e7eb',
+        flexWrap: 'wrap',
       }}>
         <select
-          style={{ ...inputStyle, width: '180px' }}
+          style={{ ...inputStyle, width: '180px', minWidth: '120px' }}
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
         >
@@ -265,7 +266,7 @@ const UserAdminPage: React.FC = () => {
 
       {/* Users Table */}
       <div style={{
-        background: '#fff', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden',
+        background: '#fff', borderRadius: '12px', border: '1px solid #e5e7eb', overflowX: 'auto',
       }}>
         {loading ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>Loading users...</div>
@@ -358,7 +359,7 @@ const UserAdminPage: React.FC = () => {
             {editMsg && <div style={{ padding: '10px', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', marginBottom: '12px', fontSize: '14px' }}>{editMsg}</div>}
             {editErr && <div style={{ padding: '10px', background: '#fef2f2', color: '#991b1b', borderRadius: '8px', marginBottom: '12px', fontSize: '14px' }}>{editErr}</div>}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '4px' }}>First Name</label>
                 <input style={inputStyle} value={editForm.first_name} onChange={(e) => setEditForm((f) => ({ ...f, first_name: e.target.value }))} />
@@ -372,7 +373,7 @@ const UserAdminPage: React.FC = () => {
               <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Email</label>
               <input type="email" style={inputStyle} value={editForm.email} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '12px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Role</label>
                 <select style={inputStyle} value={editForm.role} onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}>

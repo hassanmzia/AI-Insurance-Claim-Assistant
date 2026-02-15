@@ -111,7 +111,7 @@ const AnalyticsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid-3" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+      <div className="grid-3">
         <div className="card">
           <div className="card-header"><h3>By Status</h3></div>
           <div className="card-body" style={{ display: 'flex', justifyContent: 'center' }}>

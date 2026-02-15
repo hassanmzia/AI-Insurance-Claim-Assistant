@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome, FiFileText, FiAlertTriangle, FiCpu, FiBarChart2,
   FiBell, FiLogOut, FiPlusCircle, FiBookOpen, FiUsers, FiUser,
+  FiMenu, FiX,
 } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -20,6 +21,12 @@ const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     api.getNotifications()
@@ -61,6 +68,11 @@ const Layout: React.FC = () => {
     navigate('/login');
   };
 
+  const handleNavClick = (path: string) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
+
   const initials = user
     ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || user.username[0].toUpperCase()
     : '?';
@@ -76,10 +88,42 @@ const Layout: React.FC = () => {
 
   return (
     <div className="app-layout">
-      <aside className="sidebar">
+      {/* Mobile Header */}
+      <header className="mobile-header">
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <FiX /> : <FiMenu />}
+        </button>
+        <h1 className="mobile-header-title">ClaimAssist AI</h1>
+        <button
+          className="mobile-menu-btn"
+          onClick={() => handleNavClick('/notifications')}
+          aria-label="Notifications"
+        >
+          <FiBell />
+          {unreadCount > 0 && <span className="mobile-notif-badge">{unreadCount}</span>}
+        </button>
+      </header>
+
+      {/* Sidebar Backdrop (mobile only) */}
+      {mobileMenuOpen && (
+        <div className="sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
+      )}
+
+      <aside className={`sidebar ${mobileMenuOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
           <h1>ClaimAssist AI</h1>
           <p>Multi-Agent Insurance Platform</p>
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            <FiX />
+          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -87,7 +131,7 @@ const Layout: React.FC = () => {
             <button
               key={item.path}
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-              onClick={() => navigate(item.path)}
+              onClick={() => handleNavClick(item.path)}
             >
               {item.icon}
               <span>{item.label}</span>
@@ -104,14 +148,14 @@ const Layout: React.FC = () => {
                 background: role === 'admin' ? '#7c3aed' : role === 'manager' ? '#0891b2' : role === 'adjuster' ? '#1a56db' : role === 'reviewer' ? '#d97706' : '#10b981',
                 cursor: 'pointer',
               }}
-              onClick={() => navigate('/profile')}
+              onClick={() => handleNavClick('/profile')}
               title="View Profile"
             >{initials}</div>
-            <div className="user-details" style={{ cursor: 'pointer' }} onClick={() => navigate('/profile')}>
+            <div className="user-details" style={{ cursor: 'pointer' }} onClick={() => handleNavClick('/profile')}>
               <div className="name">{user?.first_name} {user?.last_name}</div>
               <div className="role">{roleLabels[role] || role}</div>
             </div>
-            <button className="logout-btn" onClick={() => navigate('/profile')} title="Profile" style={{ marginRight: '4px' }}>
+            <button className="logout-btn" onClick={() => handleNavClick('/profile')} title="Profile" style={{ marginRight: '4px' }}>
               <FiUser />
             </button>
             <button className="logout-btn" onClick={handleLogout} title="Logout">
