@@ -144,7 +144,7 @@ SIMPLE_JWT = {
 # CORS
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'DJANGO_CORS_ALLOWED_ORIGINS',
-    'http://172.168.1.95:3062,http://localhost:3062'
+    'https://demo.eminencetechsolutions.com:3062,http://172.168.1.95:3062,http://localhost:3062'
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
