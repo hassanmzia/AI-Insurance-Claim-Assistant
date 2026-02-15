@@ -46,5 +46,13 @@ Thumbs.db
 # Models cache
 agent-service/models/
 
+# SSL Certificates (keep .gitkeep only)
+ssl/*.pem
+ssl/*.key
+ssl/*.crt
+ssl/*.csr
+ssl/*.p12
+ssl/*.pfx
+
 # Logs
 *.log

@@ -22,6 +22,7 @@ const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'http://agent-service:5062'
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(cors({
   origin: [
+    'https://demo.eminencetechsolutions.com:3062',
     'http://172.168.1.95:3062',
     'http://localhost:3062',
     'http://frontend:3062',

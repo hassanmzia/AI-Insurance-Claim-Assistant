@@ -165,7 +165,7 @@ services:
       - insurance-network
 
   # ==========================================================================
-  # React Frontend - Port 3062
+  # React Frontend (internal only, served via Nginx)
   # ==========================================================================
   frontend:
     build:
@@ -173,12 +173,31 @@ services:
       dockerfile: Dockerfile
     container_name: insurance-frontend
     restart: unless-stopped
+    expose:
+      - "3062"
+    environment:
+      - REACT_APP_API_URL=https://demo.eminencetechsolutions.com:3062/api
+      - REACT_APP_WS_URL=wss://demo.eminencetechsolutions.com:3062/ws
+    depends_on:
+      - api-gateway
+    networks:
+      - insurance-network
+
+  # ==========================================================================
+  # Nginx Reverse Proxy with SSL - Port 3062 (HTTPS)
+  # ==========================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: insurance-nginx
+    restart: unless-stopped
     ports:
       - "3062:3062"
-    environment:
-      - REACT_APP_API_URL=http://172.168.1.95:4062/api
-      - REACT_APP_WS_URL=ws://172.168.1.95:4062/ws
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
     depends_on:
+      - frontend
       - api-gateway
     networks:
       - insurance-network
